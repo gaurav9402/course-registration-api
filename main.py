@@ -4,7 +4,15 @@ import re
 
 app = FastAPI()
 
-courses = {}
+courses = {
+    "COSC3506": {
+        "course_code": "COSC 3506",
+        "title": "Software Systems Development",
+        "credits": 3,
+        "prerequisites": ["COSC 2007"],
+        "cross_listed": ["ITEC 3506"]
+    }
+}
 
 
 @app.get("/")
@@ -22,16 +30,16 @@ def get_course_codes(text):
     if text == "" or text.lower() == "none":
         return []
 
-    found_codes = re.findall(r"\b[A-Z]{3,5}\s*\d{4}\b", text.upper())
+    matches = re.findall(r"\b[A-Z]{3,5}\s*\d{4}\b", text.upper())
     course_codes = []
 
-    for code in found_codes:
-        letters = re.search(r"[A-Z]{3,5}", code).group()
-        numbers = re.search(r"\d{4}", code).group()
-        final_code = letters + " " + numbers
+    for match in matches:
+        letters = re.search(r"[A-Z]{3,5}", match).group()
+        numbers = re.search(r"\d{4}", match).group()
+        course_code = letters + " " + numbers
 
-        if final_code not in course_codes:
-            course_codes.append(final_code)
+        if course_code not in course_codes:
+            course_codes.append(course_code)
 
     return course_codes
 
@@ -59,8 +67,8 @@ async def import_catalog(file: UploadFile = File(...)):
         course_code = format_text(cells[0].get_text())
         title = format_text(cells[1].get_text())
         credits_text = format_text(cells[2].get_text())
-        prerequisites = format_text(cells[3].get_text())
-        cross_listed = format_text(cells[4].get_text())
+        prerequisites_text = format_text(cells[3].get_text())
+        cross_listed_text = format_text(cells[4].get_text())
 
         try:
             credits = int(credits_text)
@@ -71,8 +79,8 @@ async def import_catalog(file: UploadFile = File(...)):
             "course_code": course_code,
             "title": title,
             "credits": credits,
-            "prerequisites": get_course_codes(prerequisites),
-            "cross_listed": get_course_codes(cross_listed)
+            "prerequisites": get_course_codes(prerequisites_text),
+            "cross_listed": get_course_codes(cross_listed_text)
         }
 
         course_key = course_code.replace(" ", "").upper()
