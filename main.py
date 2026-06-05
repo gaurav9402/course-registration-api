@@ -20,6 +20,11 @@ def home():
     return {"message": "Course Registration API is running"}
 
 
+@app.head("/")
+def home_head():
+    return
+
+
 def format_text(text):
     return " ".join(text.strip().split())
 
